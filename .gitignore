@@ -1,0 +1,3 @@
+# Plik instalacyjny wisi w Releases, nie w drzewie — GitHub nie przyjmuje
+# plików większych niż 100 MB, a APK waży ponad 130 MB.
+*.apk
