@@ -1,0 +1,58 @@
+# Wydanie pliku `.apk` bez tokena osobistego.
+#
+# PO CO TO JEST. Plik buduje się w chmurze Expo i leży pod publicznym adresem,
+# ale żeby zrobić z niego WYDANIE w tym repozytorium, trzeba było dotąd tokena
+# osobistego z komputera. Token bywa niedostępny (menedżer poświadczeń Windows
+# potrafi nie odpowiedzieć), a wtedy plik zostaje w Pobranych, podczas gdy wpis
+# na kanale już obiecuje nową wersję.
+#
+# Ten przebieg zdejmuje ten warunek: wystarczy WYPCHNĄĆ TAG. Uprawnienie do
+# zapisu daje `GITHUB_TOKEN`, który Actions dostaje sam i który żyje wyłącznie
+# przez czas przebiegu.
+#
+# JAK UŻYĆ:
+#   1. wpisz adres pliku z EAS do `wydanie.txt` i zacommituj,
+#   2. `git tag v1.3.0-NN && git push origin main --tags`.
+#
+# ⚠️ PLIK W WYDANIU MUSI NAZYWAĆ SIĘ `oplaca-sie.apk`. Pod tą nazwą stoi stały
+# adres `releases/latest/download/oplaca-sie.apk`, po który sięga instrukcja
+# i którego numer czyta pasek w aplikacji.
+#
+# ⚠️ `.apk` NIE WCHODZI DO DRZEWA. GitHub odrzuca pliki powyżej 100 MB, a build
+# uniwersalny waży ~135 MB (cztery architektury). Dlatego w repozytorium leży
+# ADRES, a plik dokleja się do wydania.
+
+name: wydaj
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  wydaj:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: pobierz plik z EAS
+        run: |
+          ADRES="$(tr -d ' \n\r' < wydanie.txt)"
+          case "$ADRES" in
+            https://expo.dev/artifacts/eas/*) ;;
+            # Biała lista adresu, nie sama obecność pliku: tag wypycha się
+            # jednym poleceniem, a wydanie jest publiczne i nieodwracalne.
+            *) echo "Adres spoza expo.dev/artifacts/eas — przerywam."; exit 1 ;;
+          esac
+          curl -fsSL -o oplaca-sie.apk "$ADRES"
+          ls -l oplaca-sie.apk
+
+      - name: wydaj
+        uses: softprops/action-gh-release@v2
+        with:
+          files: oplaca-sie.apk
+          name: ${{ github.ref_name }}
+          fail_on_unmatched_files: true
