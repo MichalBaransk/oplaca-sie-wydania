@@ -58,6 +58,34 @@ i można ją włączyć później.
 
 ---
 
+## Czy plik jest prawdziwy?
+
+- **Pobieraj wyłącznie stąd**, z [oplacasie.org](https://oplacasie.org) albo
+  z linku na naszym Discordzie. Plik przesłany na grupie czy w wiadomości może
+  być podrobiony.
+- **Jeśli masz już aplikację**, Android nie zainstaluje na niej pliku
+  podpisanego innym kluczem — pokaże błąd o konflikcie z istniejącą aplikacją.
+  Nie odinstalowuj wtedy aplikacji, żeby „przejść dalej": to znak, że plik
+  nie jest nasz.
+- **Odcisk SHA-256 certyfikatu podpisu** jest ten sam przy każdym wydaniu
+  (od 8 września 2026):
+
+  ```
+  aee052e80dcbae4aa076263bec44eb80273f6b6a470c205e192c8eb642d3387a
+  ```
+
+  Sprawdzisz go na komputerze poleceniem
+  `apksigner verify --print-certs oplaca-sie.apk` (Android SDK). `keytool`
+  go nie pokaże, bo plik ma podpis w nowszym formacie (v2).
+- **Każde wydanie podaje na swojej stronie SHA-256 pliku** (od wersji
+  następnej po 1.3.0-36). Windows: `certutil -hashfile oplaca-sie.apk SHA256`,
+  Linux i macOS: `sha256sum oplaca-sie.apk`.
+
+Przebieg wydania sam sprawdza podpis: plik podpisany innym kluczem niż ten
+w `certyfikat.txt` nie zostaje wydany.
+
+---
+
 ## Aktualizacje
 
 **Nie musisz pobierać pliku przy każdej zmianie.** Aplikacja sama pobiera
