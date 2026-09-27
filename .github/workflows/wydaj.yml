@@ -50,9 +50,44 @@ jobs:
           curl -fsSL -o oplaca-sie.apk "$ADRES"
           ls -l oplaca-sie.apk
 
+      # ⚠️ PODPIS PRZED WYDANIEM. Plik podpisany innym kluczem niż ten
+      # w `certyfikat.txt` nie zostaje wydany — to ochrona przed podmianą
+      # adresu w `wydanie.txt` na cudzy plik. Klucz jest stały od P196
+      # (8.09.2026; sprawdzone na vc 27, 35 i 36). Zmiana klucza to świadoma
+      # decyzja: nowy odcisk wpisuje się do `certyfikat.txt` w osobnym
+      # commicie, a Android i tak nie zainstaluje takiego pliku na wierzch.
+      - name: sprawdź podpis i policz sumę
+        run: |
+          CERT="$(python3 sprawdz_podpis.py oplaca-sie.apk)"
+          OCZEKIWANY="$(tr -d ' \n\r:' < certyfikat.txt | tr 'A-F' 'a-f')"
+          if [ "$CERT" != "$OCZEKIWANY" ]; then
+            echo "Plik podpisany innym kluczem ($CERT) niż w certyfikat.txt — przerywam."
+            exit 1
+          fi
+          SHA="$(sha256sum oplaca-sie.apk | cut -d' ' -f1)"
+          {
+            echo "## Jak sprawdzić, że plik jest prawdziwy"
+            echo
+            echo "SHA-256 pliku \`oplaca-sie.apk\`:"
+            echo
+            echo "\`\`\`"
+            echo "$SHA"
+            echo "\`\`\`"
+            echo
+            echo "Odcisk SHA-256 certyfikatu podpisu (ten sam przy każdym wydaniu):"
+            echo
+            echo "\`\`\`"
+            echo "$CERT"
+            echo "\`\`\`"
+            echo
+            echo "Windows: \`certutil -hashfile oplaca-sie.apk SHA256\` · Linux/macOS: \`sha256sum oplaca-sie.apk\`"
+          } > opis.md
+          cat opis.md
+
       - name: wydaj
         uses: softprops/action-gh-release@v2
         with:
           files: oplaca-sie.apk
           name: ${{ github.ref_name }}
+          body_path: opis.md
           fail_on_unmatched_files: true
