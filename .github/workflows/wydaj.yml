@@ -38,7 +38,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # ⚠️ WYDANIE ZROBIONE LOKALNIE (`scripts/wydaj-plik.sh` w repozytorium
+      # aplikacji) też tworzy tag `v*`, więc ten przebieg startował i PODMIENIAŁ
+      # wgrany plik na stary z `wydanie.txt` (03.10: wydanie 45 dostało plik 38).
+      # Skrypt lokalny zakłada wydanie z opisem „Zbudowane lokalnie” ZANIM
+      # wgra plik — po tym napisie przebieg poznaje, że nie ma tu nic do roboty.
+      - name: czy wydanie lokalne
+        id: lokalne
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          OPIS="$(gh release view "$GITHUB_REF_NAME" --json body -q .body 2>/dev/null || true)"
+          case "$OPIS" in
+            *"Zbudowane lokalnie"*) echo "jest=tak" >> "$GITHUB_OUTPUT"; echo "Wydanie lokalne — pomijam." ;;
+            *) echo "jest=nie" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       - name: pobierz plik z EAS
+        if: steps.lokalne.outputs.jest != 'tak'
         run: |
           ADRES="$(tr -d ' \n\r' < wydanie.txt)"
           case "$ADRES" in
@@ -57,6 +74,7 @@ jobs:
       # decyzja: nowy odcisk wpisuje się do `certyfikat.txt` w osobnym
       # commicie, a Android i tak nie zainstaluje takiego pliku na wierzch.
       - name: sprawdź podpis i policz sumę
+        if: steps.lokalne.outputs.jest != 'tak'
         run: |
           CERT="$(python3 sprawdz_podpis.py oplaca-sie.apk)"
           OCZEKIWANY="$(tr -d ' \n\r:' < certyfikat.txt | tr 'A-F' 'a-f')"
@@ -85,6 +103,7 @@ jobs:
           cat opis.md
 
       - name: wydaj
+        if: steps.lokalne.outputs.jest != 'tak'
         uses: softprops/action-gh-release@v2
         with:
           files: oplaca-sie.apk
