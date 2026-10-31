@@ -45,16 +45,17 @@ Android nie ma jej skąd znać.
 
 ### 5. Pierwsze uruchomienie
 
-Aplikacja poprowadzi Cię przez wybór języka i zgody. Trzy są **wymagane**,
+Aplikacja poprowadzi Cię przez wybór języka i zgody. Dwie są **wymagane**,
 żeby kółko oceniało oferty:
 
 - **wyświetlanie nad innymi aplikacjami** — bez tego kółko nie ma jak się
   pokazać nad aplikacją kurierską,
-- **aplikacja pomocnicza (asystent)** — tym aplikacja czyta ofertę z ekranu,
-- **lokalizacja, także w tle** — z tego liczą się kilometry na zmianie.
+- **aplikacja pomocnicza (asystent)** — tym aplikacja czyta ofertę z ekranu.
+  Kreator sprawdza też, czy Android naprawdę ją uruchomił.
 
-Reszta (powiadomienia, mikrofon do notatek głosowych, zdjęcia) jest dodatkiem
-i można ją włączyć później.
+Reszta jest dodatkiem i można ją włączyć później: **lokalizacja, także w tle**
+(z niej liczą się kilometry na zmianie — bez niej wpisujesz je sam),
+powiadomienia, mikrofon do notatek głosowych, zdjęcia.
 
 ---
 
